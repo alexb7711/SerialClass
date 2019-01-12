@@ -24,7 +24,7 @@ int SerialPort::Open(const char* dev, Baud baud)
   struct termios tty;
   memset(&tty, 0, sizeof(tty));
 
-  if (tcgetattr(m_serialPort, &tty) != 1)
+  if (tcgetattr(m_serialPort, &tty) != 0)
   {
     portOpened = 0; 
     printf("Error %i from tcgetattr: %s\n", errno, strerror(errno));
