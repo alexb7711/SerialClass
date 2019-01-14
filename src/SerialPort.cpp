@@ -19,6 +19,12 @@ SerialPort::SerialPort():
 int SerialPort::Open(const char* dev, Baud baud)
 {
   int portOpened = 1; 
+
+  if (dev == NULL || baud == -1)
+  {
+    printf("Error: bad input parameters\n");
+  }
+
   m_serialPort = open(dev, O_RDWR);
 
   struct termios tty;
@@ -28,6 +34,7 @@ int SerialPort::Open(const char* dev, Baud baud)
   {
     portOpened = 0; 
     printf("Error %i from tcgetattr: %s\n", errno, strerror(errno));
+    return portOpened;
   }
   
   tty.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
