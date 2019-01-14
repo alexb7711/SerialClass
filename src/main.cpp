@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "SerialPort.h"
 
@@ -6,7 +8,7 @@
 //
 void read(dev::SerialPort& sp)
 {
-  char read_buffer[10];
+  char read_buffer[100]; 
   int buffer_size   = sizeof(read_buffer);
 
   for (;;)
@@ -14,9 +16,9 @@ void read(dev::SerialPort& sp)
     int count = sp.Read(read_buffer, buffer_size);
 
     for (int i = 0; i < count; ++i)
-    {
       printf("%c", read_buffer[i]);
-    }
+
+    fflush(stdout);
   }
 
   return;
@@ -26,14 +28,17 @@ void read(dev::SerialPort& sp)
 //
 void write(dev::SerialPort& sp)
 {
-  char write_buffer[10];
-  int buffer_size = sizeof(write_buffer);
+  char write_buffer[100];
+  int count;
 
   for (;;)
   {
+    count = 0;
     printf("Input Text: ");
-    scanf("%c", &write_buffer);
-    sp.Write(write_buffer, buffer_size);
+    if (fgets(write_buffer, 100, stdin))
+      count = strlen(write_buffer);
+    printf("Sending[%d] '%s'\n", count, write_buffer);
+    sp.Write(write_buffer, count);
   }
 
   return;
