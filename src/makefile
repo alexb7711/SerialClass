@@ -1,8 +1,17 @@
-all: main.o SerialPort.o
-	g++ -o main main.o SerialPort.o
+CC = g++
+CLFAGS = -Wall
+OBJDIR = obj
+TARGET = main
+SRC = main.cpp SerialPort.cpp
+OBJ = $(SRC:%.cpp=%.o)
 
-main.o: main.cpp
-	g++ -c main.cpp
+all: $(TARGET)
 
-SerialPort.o: SerialPort.cpp
-	g++ -c SerialPort.cpp
+$(TARGET): $(OBJ)
+	cd $(OBJDIR) && $(CC) $(CLFAGS) $(OBJ) -o $@ 
+
+.cpp.o: $(SRC)
+	$(CC) $(CLFAGS) -c $< -o $(OBJDIR)/$@ 
+
+clean:
+	$(RM) $(OBJ) 

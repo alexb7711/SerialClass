@@ -44,7 +44,8 @@ public:
     Baud_115200,
   };
 
-  int Open(const char* dev, Baud baud);
+  
+  bool Open(const char* dev, Baud baud);
   void Close();
   void Flush();
   int Read(void* buffer, size_t size, bool block=true);
@@ -55,13 +56,9 @@ public:
 private:
   int m_serialPort;
   int m_baudRate;
-  /// Disallow the copy constructor.
-  SerialPort(const SerialPort&);
-
-  /// Disallow the assignment operator.
-  SerialPort& operator=(const SerialPort&);
 
   int ConvBaud(Baud baud);
+  bool Configure(Baud baud);
 };
 
 } // end namespace dev

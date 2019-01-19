@@ -16,52 +16,23 @@ SerialPort::SerialPort():
 
 //===============================================================================
 //
-int SerialPort::Open(const char* dev, Baud baud)
+bool SerialPort::Open(const char* dev, Baud baud)
 {
-  int portOpened = 1; 
+  bool portOpened = true; 
 
-  if (dev == NULL || baud == -1)
+  if (dev != NULL || baud != -1)
+  {
+    m_serialPort = open(dev, O_RDWR);
+
+    if (m_serialPort != -1)
+    {
+      portOpened = Configure(baud);
+    }
+  }
+  else
   {
     printf("Error: bad input parameters\n");
-  }
-
-  m_serialPort = open(dev, O_RDWR);
-
-  struct termios tty;
-  memset(&tty, 0, sizeof(tty));
-
-  if (tcgetattr(m_serialPort, &tty) != 0)
-  {
-    portOpened = 0; 
-    printf("Error %i from tcgetattr: %s\n", errno, strerror(errno));
-    return portOpened;
-  }
-  
-  tty.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
-  tty.c_cflag &= ~CSTOPB; // Clear stop field, only one stop bit used in communication (most common)
-  tty.c_cflag |= CS8; // 8 bits per byte (most common)
-  tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
-  tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
-
-  tty.c_lflag &= ~ICANON;
-  tty.c_lflag &= ~ECHO; // Disable echo
-  tty.c_lflag &= ~ECHOE; // Disable erasure
-  tty.c_lflag &= ~ECHONL; // Disable new-line echo
-  tty.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
-  tty.c_iflag &= ~(IXON | IXOFF | IXANY); // Turn off s/w flow ctrl
-  tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL); // Disable any special handling of received bytes
-
-  tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
-  tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
-
-  m_baudRate = ConvBaud(baud);
-  cfsetispeed(&tty, m_baudRate);
-  cfsetospeed(&tty, m_baudRate);
-
-  if (tcsetattr(m_serialPort, TCSANOW, &tty) != 0) 
-  {
-    portOpened = 0; 
-    printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
+    portOpened = false;
   }
 
   return portOpened;
@@ -138,6 +109,50 @@ int SerialPort::ConvBaud(Baud baud)
     case Baud_57600  : return B57600;
     case Baud_115200 : return B115200;
   }
+}
+
+bool SerialPort::Configure(Baud baud)
+{
+  bool portOpened = true;
+
+  struct termios tty;
+  memset(&tty, 0, sizeof(tty));
+
+  if (tcgetattr(m_serialPort, &tty) != 0)
+  {
+    portOpened = false; 
+    printf("Error %i from tcgetattr: %s\n", errno, strerror(errno));
+    return portOpened;
+  }
+  
+  tty.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
+  tty.c_cflag &= ~CSTOPB; // Clear stop field, only one stop bit used in communication (most common)
+  tty.c_cflag |= CS8; // 8 bits per byte (most common)
+  tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
+  tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
+
+  tty.c_lflag &= ~ICANON;
+  tty.c_lflag &= ~ECHO; // Disable echo
+  tty.c_lflag &= ~ECHOE; // Disable erasure
+  tty.c_lflag &= ~ECHONL; // Disable new-line echo
+  tty.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
+  tty.c_iflag &= ~(IXON | IXOFF | IXANY); // Turn off s/w flow ctrl
+  tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL); // Disable any special handling of received bytes
+
+  tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
+  tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
+
+  m_baudRate = ConvBaud(baud);
+  cfsetispeed(&tty, m_baudRate);
+  cfsetospeed(&tty, m_baudRate);
+
+  if (tcsetattr(m_serialPort, TCSANOW, &tty) != 0) 
+  {
+    portOpened = false; 
+    printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
+  }
+  
+  return portOpened;
 }
 
 } // end dev
