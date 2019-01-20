@@ -7,7 +7,7 @@
 #ifndef SEMAPHORE_H
 #define SEMAPHORE_H
 
-#include <lib/os/Platform.h>
+#include <Platform.h>
 
 namespace os
 {

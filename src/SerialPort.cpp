@@ -10,6 +10,7 @@ namespace dev
 //===============================================================================
 //
 SerialPort::SerialPort():
+  m_writer(1024),
   m_serialPort(0),
   m_baudRate(0)
 {}
@@ -27,6 +28,7 @@ bool SerialPort::Open(const char* dev, Baud baud)
     if (m_serialPort != -1)
     {
       portOpened = Configure(baud);
+      m_writer.Start(m_serialPort);
     }
   }
   else
@@ -41,12 +43,17 @@ bool SerialPort::Open(const char* dev, Baud baud)
 //===============================================================================
 //
 SerialPort::~SerialPort()
-{}
+{
+  m_writer.Stop();
+  close(m_serialPort);
+  return;
+}
 
 //===============================================================================
 //
 void SerialPort::Close()
 {
+  m_writer.Stop();
   close(m_serialPort);
   return;
 }
@@ -68,8 +75,7 @@ int SerialPort::Read(void* buffer, size_t size, bool block)
 //
 int SerialPort::Write(const void* buffer, size_t size)
 {
-  int bitsWritten = write(m_serialPort, buffer, size);
-  return bitsWritten;
+  return m_writer.Write(buffer, size);
 }
 
 //===============================================================================
@@ -83,7 +89,7 @@ bool SerialPort::IsEmpty()
 //
 bool SerialPort::IsFull()
 {
-  return 0;
+  return m_writer.IsFull();
 }
 
 //=========//

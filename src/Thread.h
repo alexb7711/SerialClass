@@ -6,8 +6,8 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-#include <lib/os/Platform.h>
-#include <lib/interface/IRunnable.h>
+#include <Platform.h>
+#include <IRunnable.h>
 
 namespace os
 {

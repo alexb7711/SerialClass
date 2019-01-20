@@ -7,8 +7,8 @@
 #include <pthread.h>
 #include <sched.h>
 #include <string>
-#include <lib/os/Semaphore.h>
-#include <lib/os/Thread.h>
+#include <Semaphore.h>
+#include <Thread.h>
 
 using interface::IRunnable;
 
@@ -61,8 +61,8 @@ struct Thread::OsTheadData
     {
       Thread::OsTheadData& osThreadData = *(p_inst->m_pOsTheadData);
 
-      osThreadData.m_sync_sem.post();  // signal started
       osThreadData.m_state = RUNNING;
+      osThreadData.m_sync_sem.post();  // signal started
       p_inst->run();
       osThreadData.m_state = STOPPED;
       osThreadData.m_sync_sem.post();  // signal stopping
@@ -98,8 +98,12 @@ Thread::Thread(IRunnable& target, const char* name)
 //
 Thread::~Thread()
 {
-  interrupt();
-  join();
+  if (RUNNING == m_pOsTheadData->m_state)
+  {
+    stop();
+    join();
+  }
+
   delete m_pOsTheadData;
 }
 
@@ -124,7 +128,7 @@ bool Thread::start()
 
 //==============================================================================
 //
-void Thread::interrupt()
+void Thread::stop()
 {
   m_pOsTheadData->m_state = STOPPED;
 }
@@ -140,7 +144,7 @@ bool Thread::isInterrupted()
 //
 bool Thread::join(uint32_t timeout_ms)
 {
-  if ((RUNNING == m_pOsTheadData->m_state) && (m_pOsTheadData->m_tid != 0))
+  if ((RUNNING == m_pOsTheadData->m_state) && (timeout_ms != 0))
   {
     return m_pOsTheadData->m_sync_sem.wait(timeout_ms);
   }

@@ -1,16 +1,13 @@
 ///
-/// @file Cps/lib/os/posix/Semaphore.cpp
+/// @file os/linux/Semaphore.cpp
 ///
 /// This file contains the Semaphore class posix implementation.
 ///
 
 #include <semaphore.h>
 #include <unistd.h>
-#include <Cps/lib/os/sleep_ms.h>
-#include <Cps/lib/os/Semaphore.hpp>
+#include <Semaphore.h>
 
-namespace cps
-{
 namespace os
 {
 
@@ -24,7 +21,7 @@ struct Semaphore::OsSemaphoreData
 Semaphore::Semaphore(unsigned int initval)
   : m_pOsSemaphoreData(new OsSemaphoreData)
 {
-  sem_init(&m_pOsSemaphoreData->semaphore, 1, initval);
+  sem_init(&m_pOsSemaphoreData->semaphore, 0, initval);
 }
 
 //==============================================================================
@@ -48,27 +45,20 @@ bool Semaphore::wait(unsigned int timeout_ms)
 {
   bool success = true;
 
-  if (timeout_ms == constant::WAIT_FOREVER)
+  if (WAIT_FOREVER == timeout_ms)
   {
-    success = Semaphore::wait();
+    success = sem_wait(&m_pOsSemaphoreData->semaphore) == 0;
   }
   else
   {
-    while (sem_trywait(&m_pOsSemaphoreData->semaphore) != 0)
-    {
-      if (timeout_ms < 2)
-      {
-        success = false;
-        break;
-      }
+    struct timespec ts;
 
-      timeout_ms--;
-      sleep_ms(1);
-    }
+    ts.tv_sec  = timeout_ms / 1000;
+    ts.tv_nsec = (timeout_ms % 1000) * 1000000;
+    success    = sem_timedwait(&m_pOsSemaphoreData->semaphore, &ts) == 0;
   }
 
   return success;
 }
 
 } // end os
-} // end cps

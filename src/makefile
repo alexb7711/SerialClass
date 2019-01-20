@@ -2,16 +2,18 @@ CC     = g++
 CLFAGS = -Wall
 OBJDIR = obj
 TARGET = main
-SRC    = main.cpp SerialPort.cpp
+SRC    = main.cpp SerialPort.cpp CircularBuffer.cpp SerialPortWriter.cpp Thread.cpp Mutex.cpp Semaphore.cpp
 OBJ    = $(SRC:%.cpp=%.o)
+INCLUDES = -I.
 
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
-	cd $(OBJDIR) && $(CC) $(CLFAGS) $(OBJ) -o ../$@ 
+	cd $(OBJDIR) && $(CC) $(CLFAGS) $(OBJ) -o ../$@ -lpthread -lrt
 
 .cpp.o: $(SRC)
-	$(CC) $(CLFAGS) -c $< -o $(OBJDIR)/$@ 
+	$(CC) $(CLFAGS) $(INCLUDES) -c $< -o $(OBJDIR)/$@ -lpthread -lrt
 
-clean:
-	$(RM) $(OBJ) 
+clean: 
+	rm -rf obj/
+	mkdir obj/

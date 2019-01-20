@@ -1,18 +1,16 @@
 ///
-/// @file Cps/lib/os/posix/Mutex.cpp
+/// @file os/posix/Mutex.cpp
 ///
 /// This file contains the Mutex class posix implementation.
 ///
 
 #include <pthread.h>
-#include <Cps/lib/os/Mutex.hpp>
+#include <Mutex.h>
 
-namespace cps
-{
 namespace os
 {
 
-struct Mutex::Impl
+struct Mutex::OsMutexData
 {
   pthread_mutex_t     mutex;
   pthread_mutexattr_t attr;
@@ -21,7 +19,7 @@ struct Mutex::Impl
 //==============================================================================
 //
 Mutex::Mutex()
-  : m_pOsMutexData(new Impl)
+  : m_pOsMutexData(new OsMutexData)
 {
   pthread_mutex_init(&m_pOsMutexData->mutex, &m_pOsMutexData->attr);
 }
@@ -56,4 +54,3 @@ void Mutex::unlock()
 }
 
 } // end os
-} // end cps

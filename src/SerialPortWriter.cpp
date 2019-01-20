@@ -1,11 +1,12 @@
+#include <stdio.h>
 #include "SerialPortWriter.h"
 
 //===============================================================================
 //
 SerialPortWriter::SerialPortWriter(size_t buffer_size):
   Thread("SerialPortWriter"),
-  m_cbuffer(buffer_size),
-  m_handler(-1)
+  m_handler(-1),
+  m_cbuffer(buffer_size)
 {}  
   
 //===============================================================================
@@ -22,13 +23,14 @@ void SerialPortWriter::Flush()
   
 //===============================================================================
 //
-int SerialPortWriter::Write(void* buffer, size_t size)
+int SerialPortWriter::Write(const void* buffer, size_t size)
 {
-  m_mutex.Lock();
+  m_mutex.lock();
   int written = m_cbuffer.Write(buffer, size);
-  m_mutex.Unlock();
+  m_mutex.unlock();
 
-  m_signal.Post();
+  printf("Posting...\n");
+  m_signal.post();
 
   return written;
 }  
@@ -38,7 +40,7 @@ int SerialPortWriter::Write(void* buffer, size_t size)
 void SerialPortWriter::Start(int handler)
 {
   m_handler = handler;
-  Thread::Start();
+  Thread::start();
   return;
 }  
   
@@ -46,26 +48,33 @@ void SerialPortWriter::Start(int handler)
 //
 void SerialPortWriter::Stop()
 {
-  Thread::Stop();
-  m_signal.Post();
+  Thread::stop();
+  m_signal.post();
   return;
 }  
   
 //===============================================================================
 //
-void SerialPortWriter::Run()
+void SerialPortWriter::run()
 {
-  while (!Thread::IsInterrupted())
+  while (!Thread::isInterrupted())
   {
-    m_signal.Wait();
+    printf("Waiting...\n");
+    m_signal.wait();
+    printf("Running!!!\n");
+
+    printf("Signal Detected...\n");
 
     if (!m_cbuffer.IsEmpty())
     {
       uint8_t data[10];
 
-      m_mutex.Lock();
+      m_mutex.lock();
       size_t size = m_cbuffer.Read(data, sizeof(data));
-      m_mutex.Unlock();
+      
+      for (size_t i = 0; i < size; ++i)
+        printf("%c", data[i]);
+      m_mutex.unlock();
 
       write(m_handler, data, size);
     }
@@ -78,8 +87,8 @@ void SerialPortWriter::Run()
 //
 SerialPortWriter::~SerialPortWriter()
 {
-  Thread::Stop();
-  m_signal.Post();
+  Thread::stop();
+  m_signal.post();
   return;
 }  
   

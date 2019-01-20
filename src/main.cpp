@@ -37,7 +37,7 @@ void write(dev::SerialPort& sp)
     printf("Input Text: ");
     if (fgets(write_buffer, 100, stdin))
       count = strlen(write_buffer);
-    printf("Sending[%d] '%s'\n", count, write_buffer);
+    // printf("Sending[%d]: %s\n", count, write_buffer);
     sp.Write(write_buffer, count);
   }
 

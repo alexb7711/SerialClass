@@ -1,20 +1,16 @@
-///
-/// @file SerialPort/SerialPort.h
-///
-/// This file contains the SerialPort class definition.
-///
+#ifndef DEV_SERIALPORT_H
+#define DEV_SERIALPORT_H
 
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
 
-#include <fcntl.h> 
+#include <fcntl.h> // Remove after SerialPortReader is implemented!!!
 #include <errno.h>
 #include <termios.h>
 #include <unistd.h>
 
-#ifndef DEV_SERIALPORT_H
-#define DEV_SERIALPORT_H
+#include "SerialPortWriter.h"
 
 namespace dev 
 {
@@ -54,6 +50,7 @@ public:
   bool IsFull();
 
 private:
+  SerialPortWriter m_writer;
   int m_serialPort;
   int m_baudRate;
 
