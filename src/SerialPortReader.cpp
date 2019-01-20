@@ -1,89 +1,86 @@
 #include <stdio.h>
-#include "SerialPortWriter.h"
+
+#include "SerialPortReader.h"
 
 //===============================================================================
 //
-SerialPortWriter::SerialPortWriter(size_t buffer_size):
-  Thread("SerialPortWriter"),
-  m_handler(-1),
+SerialPortReader::SerialPortReader(size_t buffer_size):
+  Thread("SerialPortReader"),
+  m_handler(0),
   m_cbuffer(buffer_size)
-{}  
-  
+{}
+
 //===============================================================================
 //
-bool SerialPortWriter::IsFull()
+bool SerialPortReader::IsEmpty()
 {
-  return m_cbuffer.IsFull();
-}  
-  
+  return m_cbuffer.IsEmpty();
+}
+
 //===============================================================================
 //
-void SerialPortWriter::Flush()
-{}  
-  
+void SerialPortReader::Flush()
+{}
+
 //===============================================================================
 //
-int SerialPortWriter::Write(const void* buffer, size_t size)
+int SerialPortReader::Read(void* buffer, size_t size)
 {
+  // printf("Waiting...\n");
+  m_signal.wait();
+  // printf("Running...\n");
+
   m_mutex.lock();
-  int written = m_cbuffer.Write(buffer, size);
-  m_mutex.unlock();
+  int read = m_cbuffer.Read(buffer, size);
+  m_mutex.unlock();  
 
-  printf("Posting...\n");
-  m_signal.post();
+  return read;
+}
 
-  return written;
-}  
-  
 //===============================================================================
 //
-void SerialPortWriter::Start(int handler)
+void SerialPortReader::Start(int handler)
 {
   m_handler = handler;
   Thread::start();
   return;
-}  
-  
+}
+
 //===============================================================================
 //
-void SerialPortWriter::Stop()
+void SerialPortReader::Stop()
 {
   Thread::stop();
   m_signal.post();
   return;
-}  
-  
+}
+
 //===============================================================================
 //
-void SerialPortWriter::run()
+void SerialPortReader::run()
 {
   while (!Thread::isInterrupted())
   {
-    printf("Waiting...\n");
-    m_signal.wait();
-    printf("Running!!!\n");
+    uint8_t data[1];
 
-    if (!m_cbuffer.IsEmpty())
-    {
-      uint8_t data[10];
+    int size = read(m_handler, data, sizeof(data));
 
-      m_mutex.lock();
-      size_t size = m_cbuffer.Read(data, sizeof(data));
-      m_mutex.unlock();
-
-      write(m_handler, data, size);
-    }
+    m_mutex.lock();
+    m_cbuffer.Write(data, size);
+    m_mutex.unlock();
+    
+    // printf("Posting...");
+    m_signal.post();
   }
 
   return;
-}  
+}
   
 //===============================================================================
 //
-SerialPortWriter::~SerialPortWriter()
+SerialPortReader::~SerialPortReader()
 {
   Thread::stop();
   m_signal.post();
   return;
-}  
-  
+}

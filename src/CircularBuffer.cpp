@@ -85,7 +85,7 @@ int CircularBuffer::Write(const void* buffer, size_t count)
 
 //=====================================================================================================================
 //
-int CircularBuffer::Read(void * buffer, size_t count) 
+int CircularBuffer::Read(void* buffer, size_t count) 
 {
   unsigned char* buff = static_cast<unsigned char*>(buffer);
   size_t available          = m_size;

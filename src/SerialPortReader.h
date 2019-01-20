@@ -1,5 +1,5 @@
-#ifndef SERIALPORTWRITER_H
-#define SERIALPORTWRITER_H
+#ifndef SERIALPORTREADER_H
+#define SERIALPORTREADER_H
 
 #include <unistd.h> 
 
@@ -8,20 +8,20 @@
 #include "Semaphore.h"
 #include "CircularBuffer.h"
 
-class SerialPortWriter : public os::Thread
+class SerialPortReader : public os::Thread
 {
 public:
-  SerialPortWriter(size_t buffer_size);
-  bool IsFull();
+  SerialPortReader(size_t buffer_size);
+  bool IsEmpty();
   void Flush();
-  int Write(const void* buffer, size_t size);
+  int Read(void* buffer, size_t size);
   void Start(int handler);
   void Stop();
   virtual void run();
-  ~SerialPortWriter();
+  ~SerialPortReader();
 
 private:
-  int m_handler; 
+  int m_handler;
   CircularBuffer m_cbuffer;
   os::Semaphore m_signal;
   os::Mutex m_mutex;

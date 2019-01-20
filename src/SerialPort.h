@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include "SerialPortWriter.h"
+#include "SerialPortReader.h"
 
 namespace dev 
 {
@@ -51,6 +52,7 @@ public:
 
 private:
   SerialPortWriter m_writer;
+  SerialPortReader m_reader;
   int m_serialPort;
   int m_baudRate;
 

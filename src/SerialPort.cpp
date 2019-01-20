@@ -11,6 +11,7 @@ namespace dev
 //
 SerialPort::SerialPort():
   m_writer(1024),
+  m_reader(1024),
   m_serialPort(0),
   m_baudRate(0)
 {}
@@ -29,6 +30,7 @@ bool SerialPort::Open(const char* dev, Baud baud)
     {
       portOpened = Configure(baud);
       m_writer.Start(m_serialPort);
+      m_reader.Start(m_serialPort);
     }
   }
   else
@@ -67,8 +69,7 @@ void SerialPort::Flush()
 //
 int SerialPort::Read(void* buffer, size_t size, bool block)
 {
-  int bitsRead = read(m_serialPort, buffer, size); 
-  return bitsRead;
+  return m_reader.Read(buffer, size);
 }
 
 //===============================================================================
