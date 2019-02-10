@@ -56,6 +56,7 @@ SerialPort::~SerialPort()
 void SerialPort::Close()
 {
   m_writer.Stop();
+  m_writer.Stop();
   close(m_serialPort);
   return;
 }

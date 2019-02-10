@@ -29,7 +29,7 @@ int SerialPortWriter::Write(const void* buffer, size_t size)
   int written = m_cbuffer.Write(buffer, size);
   m_mutex.unlock();
 
-  printf("Posting...\n");
+  // printf("Posting...\n");
   m_signal.post();
 
   return written;
@@ -59,9 +59,9 @@ void SerialPortWriter::run()
 {
   while (!Thread::isInterrupted())
   {
-    printf("Waiting...\n");
+    // printf("Waiting...\n");
     m_signal.wait();
-    printf("Running!!!\n");
+    // printf("Running!!!\n");
 
     if (!m_cbuffer.IsEmpty())
     {
